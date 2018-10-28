@@ -20,6 +20,28 @@ CREATE TABLE Transactions (
 	FOREIGN KEY (ACCOUNT_ID) REFERENCES Accounts (ID)
 );
 
+DELIMITER //
+
+CREATE TRIGGER update_account_balance
+AFTER INSERT
+   ON Transactions FOR EACH ROW 
+BEGIN
+	SET @curBal = (SELECT balance from accounts where ID = NEW.account_id);
+	IF NEW.trans_type = "WITHDRAW" THEN
+		UPDATE accounts SET balance =
+		(@curBal - NEW.amount)
+        WHERE ID = NEW.account_id;
+	ELSE 
+		UPDATE accounts SET balance =
+		(@curBal + NEW.amount)
+        WHERE ID = NEW.account_id;
+	END IF;
+
+
+END; //
+
+DELIMITER ;
+
 
 INSERT INTO Accounts VALUES
 (1, "John Smith", 7500, 230, "JohnSmith"),
