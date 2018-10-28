@@ -39,6 +39,14 @@ END; //
 
 DELIMITER ;
 
+/*
+going to add functionality to the trigger. 
+IDEA: if withdraw draws below the account holders balance charge their account a fee of 35$
+during query subtract the fees to their account balance so it displays their actual balance. 
+ADD: "PAYMENT" option that allows them to pay their fees ( this depends on how i decide to do the above idea )
+ADD: OVERDRAFT_PROTECTION if user overdraws their account and they have overdraft protection they won't get the fee
+*/
+
 INSERT INTO Accounts VALUES
 (1, "John Smith", 7500, 230, "JohnSmith"),
 (2, "Jeff Lebowski", 5.75, 300, "TheDude"),
