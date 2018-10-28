@@ -2,7 +2,6 @@ DROP DATABASE IF EXISTS bank;
 CREATE DATABASE bank;
 USE bank;
 
-
 CREATE TABLE Accounts (
 	ID					INT				PRIMARY KEY		AUTO_INCREMENT,
 	ACCOUNT_HOLDER		VARCHAR(50)		NOT NULL,
@@ -10,7 +9,6 @@ CREATE TABLE Accounts (
 	FEES				decimal(50,2)	NOT NULL,
 	USERNAME			varchar(15)		NOT NULL		UNIQUE
 );
-
 
 CREATE TABLE Transactions (
 	ID					INT				PRIMARY KEY		AUTO_INCREMENT,
@@ -37,11 +35,9 @@ BEGIN
         WHERE ID = NEW.account_id;
 	END IF;
 
-
 END; //
 
 DELIMITER ;
-
 
 INSERT INTO Accounts VALUES
 (1, "John Smith", 7500, 230, "JohnSmith"),
@@ -49,7 +45,6 @@ INSERT INTO Accounts VALUES
 (3, "Johnny Cash", 45000, 5.50, "ManInBlack"),
 (4, "Bruce Lee", 6500, 500, "BruceLee"),
 (5, "John Smith", 476, 10, "LovesFishing");
-
 
 INSERT INTO Transactions VALUES
 (NULL, 500, "DEPOSIT", 5),
