@@ -25,34 +25,52 @@ AFTER INSERT
    ON Transactions FOR EACH ROW 
 BEGIN
 	SET @curBal = (SELECT balance from accounts where ID = NEW.account_id);
+    SET @curFees = (SELECT fees FROM accounts WHERE ID = NEW.account_id);
 	IF NEW.trans_type = "WITHDRAW" THEN
-		UPDATE accounts SET balance =
-		(@curBal - NEW.amount)
-        WHERE ID = NEW.account_id;
-	ELSE 
-		UPDATE accounts SET balance =
-		(@curBal + NEW.amount)
-        WHERE ID = NEW.account_id;
+    
+		IF (@curBal - NEW.amount) < 0 THEN
+			UPDATE accounts SET 
+            balance = (@curBal - NEW.amount),
+            fees = (fees + 35)
+			WHERE ID = NEW.account_id;
+            
+		ELSE
+			UPDATE accounts SET 
+            balance = (@curBal - NEW.amount)
+			WHERE ID = NEW.account_id;        
+		END IF;
+        
+	ELSE
+            
+		IF @curFees > 0 AND new.amount <= @curFees THEN
+			UPDATE accounts SET
+            fees = (@curFees - NEW.Amount)
+            WHERE ID = NEW.account_id;
+            
+		ELSEIF @curFees > 0 AND NEW.amount > @curFees THEN
+			UPDATE accounts SET
+            fees = 0,
+            balance = (@curBal + NEW.amount) - fees
+            WHERE ID = NEW.account_id; 
+            
+        ELSE
+			UPDATE accounts SET 
+			balance = (@curBal + NEW.amount)
+			WHERE ID = NEW.account_id;
+		END IF;
 	END IF;
 
 END; //
 
 DELIMITER ;
 
-/*
-going to add functionality to the trigger. 
-IDEA: if withdraw draws below the account holders balance charge their account a fee of 35$
-during query subtract the fees to their account balance so it displays their actual balance. 
-ADD: "PAYMENT" option that allows them to pay their fees ( this depends on how i decide to do the above idea )
-ADD: OVERDRAFT_PROTECTION if user overdraws their account and they have overdraft protection they won't get the fee
-*/
 
 INSERT INTO Accounts VALUES
-(1, "John Smith", 7500, 230, "JohnSmith"),
-(2, "Jeff Lebowski", 5.75, 300, "TheDude"),
-(3, "Johnny Cash", 45000, 5.50, "ManInBlack"),
-(4, "Bruce Lee", 6500, 500, "BruceLee"),
-(5, "John Smith", 476, 10, "LovesFishing");
+(1, "John Smith", 7500, 0, "JohnSmith"),
+(2, "Jeff Lebowski", 5.75, 0, "TheDude"),
+(3, "Johnny Cash", 45000, 0, "ManInBlack"),
+(4, "Bruce Lee", 6500, 0, "BruceLee"),
+(5, "John Smith", 476, 0, "LovesFishing");
 
 INSERT INTO Transactions VALUES
 (NULL, 500, "DEPOSIT", 5),
