@@ -24,8 +24,10 @@ CREATE TRIGGER update_account_balance
 AFTER INSERT
    ON Transactions FOR EACH ROW 
 BEGIN
+
 	SET @curBal = (SELECT balance from accounts where ID = NEW.account_id);
     SET @curFees = (SELECT fees FROM accounts WHERE ID = NEW.account_id);
+    
 	IF NEW.trans_type = "WITHDRAW" THEN
     
 		IF (@curBal - NEW.amount) < 0 THEN
@@ -58,6 +60,30 @@ BEGIN
 			balance = (@curBal + NEW.amount)
 			WHERE ID = NEW.account_id;
 		END IF;
+        
+	END IF;
+
+END; //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE add_check_user
+(IN account_hol VARCHAR(50), bal decimal(50,2), uname varchar(15), amnt DECIMAL(50.2), transaction_type VARCHAR(8))
+BEGIN
+
+	IF EXISTS(SELECT id from accounts where uname = username) THEN
+		SET @uid = (SELECT id from accounts where uname = username);
+        INSERT INTO Transactions VALUES
+        (NULL, amnt, transaction_type, @uid);        
+        
+	ELSE
+		INSERT INTO accounts VALUES
+        (NULL, account_hol, bal, 0, uname);
+        SET @last_inserted_id = LAST_INSERT_ID();
+        INSERT INTO Transactions VALUES
+        (NULL, amnt, transaction_type, @last_inserted_id);        
 	END IF;
 
 END; //
@@ -81,3 +107,13 @@ INSERT INTO Transactions VALUES
 (NULL, 260, "WITHDRAW", 3),
 (NULL, 399.99, "WITHDRAW", 4),
 (NULL, 75, "WITHDRAW", 5);
+
+
+/*
+convenience procedure added to create new user if username doesn't exist
+or to add a transaction if the user already exists. 
+here's two examples:
+CALL add_check_user("John Smith", 50000, 'JohnnyBoy', 500, 'DEPOSIT');
+CALL add_check_user("John Smith", 50000, 'JohnSmith', 500, 'DEPOSIT');
+*/
+
