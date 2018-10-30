@@ -5,14 +5,14 @@ USE bank;
 CREATE TABLE Accounts (
 	ID					INT				PRIMARY KEY		AUTO_INCREMENT,
 	ACCOUNT_HOLDER		VARCHAR(50)		NOT NULL,
-	BALANCE				decimal(50,2)	NOT NULL,
-	FEES				decimal(50,2)	NOT NULL,
+	BALANCE				decimal(9,2)	NOT NULL,
+	FEES				decimal(9,2)	NOT NULL,
 	USERNAME			varchar(15)		NOT NULL		UNIQUE
 );
 
 CREATE TABLE Transactions (
 	ID					INT				PRIMARY KEY		AUTO_INCREMENT,
-	AMOUNT				DECIMAL(50.2)	NOT NULL,
+	AMOUNT				DECIMAL(9,2)	NOT NULL,
 	TRANS_TYPE			VARCHAR(8)		NOT NULL,
 	ACCOUNT_ID			INT				NOT NULL,
 	FOREIGN KEY (ACCOUNT_ID) REFERENCES Accounts (ID)
@@ -70,7 +70,7 @@ DELIMITER ;
 DELIMITER //
 
 CREATE PROCEDURE add_check_user
-(IN account_hol VARCHAR(50), bal decimal(50,2), uname varchar(15), amnt DECIMAL(50.2), transaction_type VARCHAR(8))
+(IN account_hol VARCHAR(50), bal decimal(9,2), uname varchar(15), amnt DECIMAL(9,2), transaction_type VARCHAR(8))
 BEGIN
 
 	IF EXISTS(SELECT id from accounts where uname = username) THEN
@@ -85,6 +85,21 @@ BEGIN
         INSERT INTO Transactions VALUES
         (NULL, amnt, transaction_type, @last_inserted_id);        
 	END IF;
+
+END; //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE get_user_transactions
+(IN uname varchar(15))
+BEGIN
+
+	SELECT account_holder, Transactions.amount, Transactions.trans_type FROM accounts
+	LEFT OUTER JOIN Transactions ON Transactions.account_id=accounts.id
+	WHERE accounts.username = uname;
 
 END; //
 
