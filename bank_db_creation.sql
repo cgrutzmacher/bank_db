@@ -14,6 +14,7 @@ CREATE TABLE Transactions (
 	ID					INT				PRIMARY KEY		AUTO_INCREMENT,
 	AMOUNT				DECIMAL(9,2)	NOT NULL,
 	TRANS_TYPE			VARCHAR(8)		NOT NULL,
+    TRANS_DATE			DATE		NOT NULL,
 	ACCOUNT_ID			INT				NOT NULL,
 	FOREIGN KEY (ACCOUNT_ID) REFERENCES Accounts (ID)
 );
@@ -76,14 +77,14 @@ BEGIN
 	IF EXISTS(SELECT id from accounts where uname = username) THEN
 		SET @uid = (SELECT id from accounts where uname = username);
         INSERT INTO Transactions VALUES
-        (NULL, amnt, transaction_type, @uid);        
+        (NULL, amnt, transaction_type, get_random_date(25), @uid);        
         
 	ELSE
 		INSERT INTO accounts VALUES
         (NULL, account_hol, bal, 0, uname);
         SET @last_inserted_id = LAST_INSERT_ID();
         INSERT INTO Transactions VALUES
-        (NULL, amnt, transaction_type, @last_inserted_id);        
+        (NULL, amnt, transaction_type, get_random_date(25), @last_inserted_id);        
 	END IF;
 
 END; //
@@ -97,10 +98,27 @@ CREATE PROCEDURE get_user_transactions
 (IN uname varchar(15))
 BEGIN
 
-	SELECT account_holder, Transactions.amount, Transactions.trans_type FROM accounts
+	SELECT account_holder, Transactions.amount, Transactions.trans_type, Transactions.trans_date FROM accounts
 	LEFT OUTER JOIN Transactions ON Transactions.account_id=accounts.id
-	WHERE accounts.username = uname;
+	WHERE accounts.username = uname
+    ORDER BY trans_date DESC;
 
+END; //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE FUNCTION get_random_date
+(start_year int)
+RETURNS DATE
+NOT DETERMINISTIC
+BEGIN
+	DECLARE rand_date DATE;
+    SET rand_date = (SELECT CURDATE() - INTERVAL RAND()*start_year YEAR - INTERVAL RAND()*365 DAY);
+    RETURN rand_date;
+    
 END; //
 
 DELIMITER ;
@@ -114,18 +132,18 @@ INSERT INTO Accounts VALUES
 (5, "John Smith", 476, 0, "LovesFishing");
 
 INSERT INTO Transactions VALUES
-(NULL, 500, "DEPOSIT", 5),
-(NULL, 3.50, "WITHDRAW", 1),
-(NULL, 15, "DEPOSIT", 1),
-(NULL, 4.78, "WITHDRAW", 2),
-(NULL, 1750, "DEPOSIT", 3),
-(NULL, 260, "WITHDRAW", 3),
-(NULL, 399.99, "WITHDRAW", 4),
-(NULL, 75, "WITHDRAW", 5);
+(NULL, 500, "DEPOSIT", get_random_date(25), 5),
+(NULL, 3.50, "WITHDRAW", get_random_date(25), 1),
+(NULL, 15, "DEPOSIT", get_random_date(25), 1),
+(NULL, 4.78, "WITHDRAW",get_random_date(25), 2),
+(NULL, 1750, "DEPOSIT", get_random_date(25), 3),
+(NULL, 260, "WITHDRAW", get_random_date(25), 3),
+(NULL, 399.99, "WITHDRAW", get_random_date(25), 4),
+(NULL, 75, "WITHDRAW", get_random_date(25), 5);
 
 
 /*
-convenience procedure added to create new user if username doesn't exist
+convenience procedure add_check_user added to create new user if username doesn't exist
 or to add a transaction if the user already exists. 
 here's two examples:
 CALL add_check_user("John Smith", 50000, 'JohnnyBoy', 500, 'DEPOSIT');
