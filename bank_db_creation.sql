@@ -123,6 +123,22 @@ END; //
 
 DELIMITER ;
 
+DELIMITER //
+
+CREATE PROCEDURE generate_random_transactions
+(IN num_of_transactions INT)
+BEGIN
+	SET @i = 0;
+    SET @user_count = (SELECT COUNT(*) FROM Accounts);
+    WHILE @i <= num_of_transactions DO
+		INSERT INTO Transactions VALUES
+		(NULL, (FLOOR(1+ RAND()*100)), ELT(FLOOR(RAND()*2)+1, 'WITHDRAW', 'DEPOSIT'), get_random_date(25), FLOOR(1+RAND()*@user_count));
+        SET @i = @i+1;
+	END WHILE;
+
+END; //
+
+DELIMITER ;
 
 INSERT INTO Accounts VALUES
 (1, "John Smith", 7500, 0, "JohnSmith"),
@@ -131,6 +147,10 @@ INSERT INTO Accounts VALUES
 (4, "Bruce Lee", 6500, 0, "BruceLee"),
 (5, "John Smith", 476, 0, "LovesFishing");
 
+CALL generate_random_transactions(100);
+
+
+/*
 INSERT INTO Transactions VALUES
 (NULL, 500, "DEPOSIT", get_random_date(25), 5),
 (NULL, 3.50, "WITHDRAW", get_random_date(25), 1),
@@ -140,6 +160,7 @@ INSERT INTO Transactions VALUES
 (NULL, 260, "WITHDRAW", get_random_date(25), 3),
 (NULL, 399.99, "WITHDRAW", get_random_date(25), 4),
 (NULL, 75, "WITHDRAW", get_random_date(25), 5);
+*/
 
 
 /*
@@ -148,5 +169,13 @@ or to add a transaction if the user already exists.
 here's two examples:
 CALL add_check_user("John Smith", 50000, 'JohnnyBoy', 500, 'DEPOSIT');
 CALL add_check_user("John Smith", 50000, 'JohnSmith', 500, 'DEPOSIT');
+
+NOTE: in order to run FUNCTION get_random_date you must first run command
+SET GLOBAL log_bin_trust_function_creators = 1;
+then edit
+C:\ProgramData\MySQL\MySQL Server 8.0\my.ini and add the flag
+log_bin_trust_function_creators=1
+finally restart mysql service then run sql script again
+
 */
 
