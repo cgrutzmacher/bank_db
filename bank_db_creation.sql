@@ -95,13 +95,22 @@ DELIMITER ;
 DELIMITER //
 
 CREATE PROCEDURE get_user_transactions
-(IN uname VARCHAR(15))
+(IN uname VARCHAR(15), IN get_all_users BOOLEAN)
 BEGIN
+	
+    IF NOT get_all_users THEN
 
-	SELECT account_holder, Transactions.amount, Transactions.trans_type, Transactions.trans_date FROM accounts
-	LEFT OUTER JOIN Transactions ON Transactions.account_id=accounts.id
-	WHERE accounts.username = uname
-    ORDER BY trans_date DESC;
+		SELECT account_holder, Transactions.amount, Transactions.trans_type, Transactions.trans_date FROM accounts
+		LEFT OUTER JOIN Transactions ON Transactions.account_id=accounts.id
+		WHERE accounts.username = uname
+		ORDER BY trans_date DESC;
+        
+	ELSE 
+		SELECT account_holder, Transactions.amount, Transactions.trans_type, Transactions.trans_date FROM accounts
+		LEFT OUTER JOIN Transactions ON Transactions.account_id=accounts.id
+        ORDER BY account_holder ASC, trans_date DESC;
+		
+    END IF;
 
 END; //
 
