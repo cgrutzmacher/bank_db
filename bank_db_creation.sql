@@ -14,7 +14,7 @@ CREATE TABLE Transactions (
 	ID					INT				PRIMARY KEY		AUTO_INCREMENT,
 	AMOUNT				DECIMAL(9,2)	NOT NULL,
 	TRANS_TYPE			VARCHAR(8)		NOT NULL,
-    TRANS_DATE			DATE		NOT NULL,
+    TRANS_DATE			DATE			NOT NULL,
 	ACCOUNT_ID			INT				NOT NULL,
 	FOREIGN KEY (ACCOUNT_ID) REFERENCES Accounts (ID)
 );
@@ -26,7 +26,7 @@ AFTER INSERT
    ON Transactions FOR EACH ROW 
 BEGIN
 
-	SET @curBal = (SELECT balance from accounts where ID = NEW.account_id);
+	SET @curBal = (SELECT balance FROM accounts WHERE ID = NEW.account_id);
     SET @curFees = (SELECT fees FROM accounts WHERE ID = NEW.account_id);
     
 	IF NEW.trans_type = "WITHDRAW" THEN
@@ -45,7 +45,7 @@ BEGIN
         
 	ELSE
             
-		IF @curFees > 0 AND new.amount <= @curFees THEN
+		IF @curFees > 0 AND NEW.amount <= @curFees THEN
 			UPDATE accounts SET
             fees = (@curFees - NEW.Amount)
             WHERE ID = NEW.account_id;
@@ -71,11 +71,11 @@ DELIMITER ;
 DELIMITER //
 
 CREATE PROCEDURE add_check_user
-(IN account_hol VARCHAR(50), bal decimal(9,2), uname varchar(15), amnt DECIMAL(9,2), transaction_type VARCHAR(8))
+(IN account_hol VARCHAR(50), bal DECIMAL(9,2), uname VARCHAR(15), amnt DECIMAL(9,2), transaction_type VARCHAR(8))
 BEGIN
 
-	IF EXISTS(SELECT id from accounts where uname = username) THEN
-		SET @uid = (SELECT id from accounts where uname = username);
+	IF EXISTS(SELECT id FROM accounts WHERE uname = username) THEN
+		SET @uid = (SELECT id FROM accounts WHERE uname = username);
         INSERT INTO Transactions VALUES
         (NULL, amnt, transaction_type, get_random_date(25), @uid);        
         
@@ -95,7 +95,7 @@ DELIMITER ;
 DELIMITER //
 
 CREATE PROCEDURE get_user_transactions
-(IN uname varchar(15))
+(IN uname VARCHAR(15))
 BEGIN
 
 	SELECT account_holder, Transactions.amount, Transactions.trans_type, Transactions.trans_date FROM accounts
@@ -111,7 +111,7 @@ DELIMITER ;
 DELIMITER //
 
 CREATE FUNCTION get_random_date
-(start_year int)
+(start_year INT)
 RETURNS DATE
 NOT DETERMINISTIC
 BEGIN
